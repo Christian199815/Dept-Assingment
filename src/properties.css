@@ -1,0 +1,34 @@
+/* CSS Custom Properties / Variables */
+:root {
+  --primary-black: #000000;
+  --primary-rose: #F0EBFF;
+  --primary-purple: #5115F7;
+
+
+
+  --text-900: #000000;
+  --text-400: #9D9D9D;
+  --text-300: #C4C4C4;
+  --text-100: #D9D9D9;
+  --text-50: #F5F5F5;
+
+  --hr-color: #E5E5E5;
+  --bg-grey: #f2f2f2;
+
+  --text-size-h1: 72px;
+  --text-size-h2: 60px;
+  --text-size-h3: 48px;
+  --text-size-h4: 36px;
+  --text-size-h5: 24px;
+  --text-size-h6: 18px;
+
+
+  --text-lh-h1: 86px;
+  --text-lh-h2: 72px;
+  --text-lh-h3: 56px;
+  --text-lh-h4: 43px;
+  --text-lh-h5: 28px;
+  --text-lh-h6: 28px;
+
+
+}
