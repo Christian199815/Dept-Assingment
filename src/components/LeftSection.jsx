@@ -1,101 +1,74 @@
-import { useState, useEffect, useMemo } from 'react'
-import ActivitiesList from './ActivitiesList'
-import ActivityModal from './ActivityModal'
+import { useState } from 'react'
 import ForecastItem from './ForecastItem'
 
-function LeftSection({ forecastData, weatherData, activitiesData }) {
+function LeftSection({ forecastData, weatherData }) {
   const [showReadMore, setShowReadMore] = useState(false)
   const [email, setEmail] = useState('')
-  const [selectedActivity, setSelectedActivity] = useState(null)
-  const [showAllSuitable, setShowAllSuitable] = useState(false)
-  const [showAllNotSuitable, setShowAllNotSuitable] = useState(false)
-  const [randomSeed, setRandomSeed] = useState(0)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitMessage, setSubmitMessage] = useState('')
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false)
+  const [inputWidth, setInputWidth] = useState(300)
 
   const toggleReadMore = () => {
     setShowReadMore(!showReadMore)
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    console.log('Signup with email:', email)
-    setEmail('')
-  }
-
-  const openModal = (activity) => {
-    setSelectedActivity(activity)
-  }
-
-  const closeModal = () => {
-    setSelectedActivity(null)
-  }
-
-  // Seeded random function for consistent randomization
-  const seededRandom = (seed) => {
-    let x = Math.sin(seed) * 10000;
-    return x - Math.floor(x);
-  }
-
-  // Shuffle array with seeded random
-  const shuffleWithSeed = (array, seed) => {
-    const shuffled = [...array]
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(seededRandom(seed + i) * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
-    }
-    return shuffled
-  }
-
-  // Update random seed when temperature changes
-  useEffect(() => {
-    if (weatherData?.temperature) {
-      const currentTemp = weatherData.temperature?.temp || weatherData.temperature
-      const tempInCelsius = weatherData.temperature?.metric === 'FAHRENHEIT' 
-        ? Math.round((currentTemp - 32) * 5/9) 
-        : currentTemp
-      setRandomSeed(tempInCelsius * 137) // Use temperature as seed multiplier
-      setShowAllSuitable(false)
-      setShowAllNotSuitable(false)
-    }
-  }, [weatherData?.temperature])
-
-  // Filter and randomize activities based on current temperature
-  const { allSuitable, allNotSuitable, displaySuitable, displayNotSuitable } = useMemo(() => {
-    if (!weatherData || !activitiesData.length) {
-      return { allSuitable: [], allNotSuitable: [], displaySuitable: [], displayNotSuitable: [] }
-    }
-
-    const currentTemp = weatherData.temperature?.temp || weatherData.temperature
-    const tempInCelsius = weatherData.temperature?.metric === 'FAHRENHEIT' 
-      ? Math.round((currentTemp - 32) * 5/9) 
-      : currentTemp
-    const suitable = []
-    const notSuitable = []
-
-    activitiesData.forEach(activity => {
-      const { minTemp, maxTemp } = activity
+    setIsSubmitting(true)
+    setSubmitMessage('')
+    
+    console.log('Submitting email:', email) // Debug log
+    
+    try {
+      const response = await fetch('https://dtnl-frontend-case.vercel.app/api/post-subscribe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: email
+        })
+      })
       
-      // If min or max is null, temperature doesn't matter for that bound
-      const minOk = minTemp === null || tempInCelsius >= minTemp
-      const maxOk = maxTemp === null || tempInCelsius <= maxTemp
+      console.log('Response status:', response.status) // Debug log
       
-      if (minOk && maxOk) {
-        suitable.push(activity)
+      const responseData = await response.json().catch(() => null)
+      console.log('Response data:', responseData) // Debug log
+      
+      if (response.status === 200) {
+        console.log('Success! Showing popup') // Debug log
+        setShowSuccessPopup(true)
+        setEmail('')
+        setInputWidth(300) // Reset width
+      } else if (response.status === 400) {
+        setSubmitMessage('Invalid email address. Please try again.')
       } else {
-        notSuitable.push(activity)
+        setSubmitMessage(`Something went wrong. Status: ${response.status}`)
       }
-    })
-
-    // Randomize arrays with temperature-based seed
-    const randomizedSuitable = shuffleWithSeed(suitable, randomSeed)
-    const randomizedNotSuitable = shuffleWithSeed(notSuitable, randomSeed + 100)
-
-    return {
-      allSuitable: randomizedSuitable,
-      allNotSuitable: randomizedNotSuitable,
-      displaySuitable: showAllSuitable ? randomizedSuitable : randomizedSuitable.slice(0, 3),
-      displayNotSuitable: showAllNotSuitable ? randomizedNotSuitable : randomizedNotSuitable.slice(0, 3)
+    } catch (error) {
+      console.error('Subscription error:', error)
+      setSubmitMessage('Network error. Please try again.')
+    } finally {
+      setIsSubmitting(false)
+      // Clear error message after 3 seconds
+      setTimeout(() => setSubmitMessage(''), 3000)
     }
-  }, [weatherData, activitiesData, randomSeed, showAllSuitable, showAllNotSuitable])
+  }
+
+  const handleEmailChange = (e) => {
+    const value = e.target.value
+    setEmail(value)
+    
+    // Calculate width based on content
+    const canvas = document.createElement('canvas')
+    const context = canvas.getContext('2d')
+    context.font = '16px Lato, sans-serif' // Match the font from CSS
+    const textWidth = context.measureText(value || 'Enter your e-mailaddress').width
+    const newWidth = Math.max(300, Math.min(500, textWidth + 100)) // Add more padding
+    console.log('Text:', value, 'Width:', textWidth, 'New Width:', newWidth) // Debug log
+    setInputWidth(newWidth)
+  }
 
   const formatDate = (dateString) => {
     const date = new Date(dateString)
@@ -152,29 +125,6 @@ function LeftSection({ forecastData, weatherData, activitiesData }) {
     return rotationMap[direction] || 0
   }
 
-  const getCurrentWeatherDescription = () => {
-    if (!weatherData) return null
-    
-    const currentTemp = weatherData.temperature?.temp || weatherData.temperature
-    const tempInCelsius = weatherData.temperature?.metric === 'FAHRENHEIT' 
-      ? Math.round((currentTemp - 32) * 5/9) 
-      : currentTemp
-
-    const weatherInfo = weatherData.weatherInfo?.find(info => {
-      const minTemp = info.minTemp
-      const maxTemp = info.maxTemp
-      return (minTemp === null || tempInCelsius >= minTemp) && 
-             (maxTemp === null || tempInCelsius <= maxTemp)
-    })
-
-    return {
-      temp: tempInCelsius,
-      title: weatherInfo?.title?.replace('{{ CELCIUS }}', tempInCelsius),
-      description: weatherInfo?.description
-    }
-  }
-
-  const currentWeather = getCurrentWeatherDescription()
 
   return (
     <>
@@ -246,79 +196,42 @@ function LeftSection({ forecastData, weatherData, activitiesData }) {
               type="email"
               placeholder="Enter your e-mailaddress"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={handleEmailChange}
               className="email-input"
+              style={{ width: `${inputWidth}px` }}
               required
+              disabled={isSubmitting}
             />
-            <button type="submit" className="submit-btn">
-              Submit
+            <button type="submit" className="submit-btn" disabled={isSubmitting}>
+              {isSubmitting ? 'Submitting...' : 'Submit'}
             </button>
           </form>
+          {submitMessage && (
+            <p className="submit-message error">
+              {submitMessage}
+            </p>
+          )}
         </div>
       </div>
 
-      {/* White Section - Grid position 2,1 spanning full height */}
-      <div className="white-section">
-        {currentWeather && (
-          <div className="current-weather">
-            <div className="weather-temp">
-              <span className="temp-number">{currentWeather.temp}°</span>
-            </div>
-            <div className="weather-info">
-              <h3 className="weather-title">{currentWeather.title}</h3>
-              <p className="weather-description">{currentWeather.description}</p>
-            </div>
-          </div>
-        )}
-
-        <div className="activities-container">
-          <div className="activity-section">
-            <ActivitiesList 
-              title="Some things you could do:"
-              activities={displaySuitable}
-              onActivityClick={openModal}
-            />
-            {allSuitable.length > 3 && (
-              <button 
-                className="see-more-btn"
-                onClick={() => setShowAllSuitable(!showAllSuitable)}
-              >
-                {showAllSuitable ? 'see less activities' : 'see more activities'}
-              </button>
-            )}
-          </div>
-          
-          <div className="activity-section">
-            <ActivitiesList 
-              title="Some things you should not do:"
-              activities={displayNotSuitable}
-              onActivityClick={openModal}
-            />
-            {allNotSuitable.length > 3 && (
-              <button 
-                className="see-more-btn"
-                onClick={() => setShowAllNotSuitable(!showAllNotSuitable)}
-              >
-                {showAllNotSuitable ? 'see less activities' : 'see more activities'}
-              </button>
-            )}
+      {/* Success Popup Modal */}
+      {showSuccessPopup && (
+        <div className="success-popup">
+          <div className="popup-content">
+            <div className="popup-icon">✓</div>
+            <h3 className="popup-title">Successfully Subscribed!</h3>
+            <p className="popup-message">
+              You're all set! You'll receive daily weather forecasts at your email address.
+            </p>
+            <button 
+              className="popup-close-btn"
+              onClick={() => setShowSuccessPopup(false)}
+            >
+              Got it
+            </button>
           </div>
         </div>
-
-        {selectedActivity && (
-          <ActivityModal 
-            activity={selectedActivity} 
-            onClose={closeModal} 
-          />
-        )}
-      </div>
-
-      {/* Footer Section - Grid position 3, spanning full width */}
-      <div className="footer-section">
-        <h2 className="footer-text">
-          DEPT. × <span className="fdnd">CMD</span>
-        </h2>
-      </div>
+      )}
     </>
   )
 }

@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import './App.css'
 import './properties.css'
 import LeftSection from './components/LeftSection'
+import RightSection from './components/RightSection'
+import Footer from './components/Footer'
 
 function App() {
   const [weatherData, setWeatherData] = useState(null)
@@ -34,7 +36,9 @@ function App() {
     <div className="app">
       <div className="content-wrapper">
         <div className="grid-container">
-          <LeftSection forecastData={forecastData} weatherData={weatherData} activitiesData={activitiesData} />
+          <LeftSection forecastData={forecastData} weatherData={weatherData} />
+          <RightSection weatherData={weatherData} activitiesData={activitiesData} />
+          <Footer />
         </div>
       </div>
     </div>

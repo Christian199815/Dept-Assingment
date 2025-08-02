@@ -13,7 +13,7 @@ function ForecastItem({ day, formatDate, convertTemp, getWeatherIcon, getWindRot
             height="20"
           />
         <p className="forecast-temps">
-          {convertTemp(day.minTemp, day.metric)}° / {convertTemp(day.maxTemp, day.metric)}°
+          <span className="min-temp">{convertTemp(day.minTemp, day.metric)}°</span> / <span className="max-temp">{convertTemp(day.maxTemp, day.metric)}°</span>
         </p>
         <img className="forecast-precipitation-icon"
             src="/rain-icon.svg" 

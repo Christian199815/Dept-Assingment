@@ -11,8 +11,10 @@ function ActivityCard({ activity, onClick }) {
         />
       </div>
       <div className="activity-content">
-        <h5 className="activity-name">{activity.title}</h5>
-        <p className="activity-description">{activity.shortDescription}</p>
+        <div className="activity-text">
+          <h5 className="activity-name">{activity.title}</h5>
+          <p className="activity-description">{activity.shortDescription}</p>
+        </div>
         <hr />
       </div>
     </div>
