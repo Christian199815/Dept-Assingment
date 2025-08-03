@@ -1,18 +1,35 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import ForecastItem from './ForecastItem'
 
+/**
+ * LeftSection component - Contains purple section (intro) and rose section (forecast + signup)
+ * Handles email subscription and displays weather forecast
+ */
 function LeftSection({ forecastData, weatherData }) {
+  // UI state
   const [showReadMore, setShowReadMore] = useState(false)
   const [email, setEmail] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitMessage, setSubmitMessage] = useState('')
   const [showSuccessPopup, setShowSuccessPopup] = useState(false)
-  const [inputWidth, setInputWidth] = useState(300)
+  const popupButtonRef = useRef(null)
 
+  /** Toggle read more/less text visibility */
   const toggleReadMore = () => {
     setShowReadMore(!showReadMore)
   }
 
+  /** Auto-focus popup button when success modal appears for accessibility */
+  useEffect(() => {
+    if (showSuccessPopup && popupButtonRef.current) {
+      popupButtonRef.current.focus()
+    }
+  }, [showSuccessPopup])
+
+  /**
+   * Handle email subscription form submission
+   * Shows success popup on 200, error messages on other statuses
+   */
   const handleSubmit = async (e) => {
     e.preventDefault()
     setIsSubmitting(true)
@@ -40,7 +57,6 @@ function LeftSection({ forecastData, weatherData }) {
         console.log('Success! Showing popup') // Debug log
         setShowSuccessPopup(true)
         setEmail('')
-        setInputWidth(300) // Reset width
       } else if (response.status === 400) {
         setSubmitMessage('Invalid email address. Please try again.')
       } else {
@@ -51,25 +67,17 @@ function LeftSection({ forecastData, weatherData }) {
       setSubmitMessage('Network error. Please try again.')
     } finally {
       setIsSubmitting(false)
-      // Clear error message after 3 seconds
+      // Auto-clear error messages after 3 seconds
       setTimeout(() => setSubmitMessage(''), 3000)
     }
   }
 
+  /** Update email input value */
   const handleEmailChange = (e) => {
-    const value = e.target.value
-    setEmail(value)
-    
-    // Calculate width based on content
-    const canvas = document.createElement('canvas')
-    const context = canvas.getContext('2d')
-    context.font = '16px Lato, sans-serif' // Match the font from CSS
-    const textWidth = context.measureText(value || 'Enter your e-mailaddress').width
-    const newWidth = Math.max(300, Math.min(500, textWidth + 100)) // Add more padding
-    console.log('Text:', value, 'Width:', textWidth, 'New Width:', newWidth) // Debug log
-    setInputWidth(newWidth)
+    setEmail(e.target.value)
   }
 
+  /** Format date string to readable format: "Monday 3rd Jan" */
   const formatDate = (dateString) => {
     const date = new Date(dateString)
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
@@ -82,8 +90,9 @@ function LeftSection({ forecastData, weatherData }) {
     return `${dayName} ${day}${getOrdinalSuffix(day)} ${month}`
   }
 
+  /** Get ordinal suffix for day numbers (1st, 2nd, 3rd, 4th, etc.) */
   const getOrdinalSuffix = (day) => {
-    if (day > 3 && day < 21) return 'th'
+    if (day > 3 && day < 21) return 'th' // Special case for 11th, 12th, 13th
     switch (day % 10) {
       case 1: return 'st'
       case 2: return 'nd' 
@@ -92,6 +101,7 @@ function LeftSection({ forecastData, weatherData }) {
     }
   }
 
+  /** Convert Fahrenheit to Celsius if needed */
   const convertTemp = (temp, metric) => {
     if (metric === 'FAHRENHEIT') {
       return Math.round((temp - 32) * 5/9)
@@ -99,6 +109,7 @@ function LeftSection({ forecastData, weatherData }) {
     return temp
   }
 
+  /** Map weather condition names to icon file paths */
   const getWeatherIcon = (iconName) => {
     const iconMap = {
       'heavy-rain': '/cloudy-icon.svg',
@@ -111,16 +122,17 @@ function LeftSection({ forecastData, weatherData }) {
     return iconMap[iconName] || '/sun-icon.svg'
   }
 
+  /** Calculate rotation degrees for wind direction icon (icon defaults to pointing north) */
   const getWindRotation = (direction) => {
     const rotationMap = {
-      'N': 0,
-      'NE': 45,
-      'E': 90,  
-      'SE': 135,
-      'S': 180,
-      'SW': 225,
-      'W': 270,
-      'NW': 315
+      'N': 0,     // North: point up (no rotation needed)
+      'NE': 45,   // Northeast: point up-right (45° from up)
+      'E': 90,    // East: point right (90° from up)
+      'SE': 135,  // Southeast: point down-right (135° from up)
+      'S': 180,   // South: point down (180° from up)
+      'SW': 225,  // Southwest: point down-left (225° from up)
+      'W': 270,   // West: point left (270° from up)
+      'NW': 315   // Northwest: point up-left (315° from up)
     }
     return rotationMap[direction] || 0
   }
@@ -162,15 +174,15 @@ function LeftSection({ forecastData, weatherData }) {
               </p>
             )}
             
-            <button className="read-more-btn" onClick={toggleReadMore}>
+            <button className="read-more-btn focus-outline" onClick={toggleReadMore} tabIndex={1}>
               {showReadMore ? 'Read less' : 'Read more'}
             </button>
           </div>
         </div>
       </div>
 
-      {/* Rose Section - Grid position 1,2 */}
-      <div className="rose-section">
+      {/* Grey Section - Grid position 1,2 */}
+      <div className="grey-section">
         {/* Forecast Section */}
         <div className="forecast-section">
           <h6 className="forecast-title">Upcoming 5 days</h6>
@@ -197,12 +209,12 @@ function LeftSection({ forecastData, weatherData }) {
               placeholder="Enter your e-mailaddress"
               value={email}
               onChange={handleEmailChange}
-              className="email-input"
-              style={{ width: `${inputWidth}px` }}
+              className="email-input focus-outline"
+              tabIndex={200}
               required
               disabled={isSubmitting}
             />
-            <button type="submit" className="submit-btn" disabled={isSubmitting}>
+            <button type="submit" className="submit-btn focus-outline" tabIndex={201} disabled={isSubmitting}>
               {isSubmitting ? 'Submitting...' : 'Submit'}
             </button>
           </form>
@@ -224,8 +236,16 @@ function LeftSection({ forecastData, weatherData }) {
               You're all set! You'll receive daily weather forecasts at your email address.
             </p>
             <button 
-              className="popup-close-btn"
+              ref={popupButtonRef}
+              className="popup-close-btn focus-outline"
               onClick={() => setShowSuccessPopup(false)}
+              tabIndex={202}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setShowSuccessPopup(false);
+                }
+              }}
             >
               Got it
             </button>

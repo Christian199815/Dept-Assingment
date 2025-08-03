@@ -3,6 +3,18 @@
   font-family: 'Lato', sans-serif;
 }
 
+/* Universal focus style class */
+.focus-outline {
+  &:focus {
+    outline: 2px solid #6E1D1D;
+    outline-offset: 2px;
+  }
+
+  &:focus:not(:focus-visible) {
+    outline: none;
+  }
+}
+
 h1 {
   font-size: var(--text-size-h1);
   line-height: var(--text-lh-h1);
@@ -30,7 +42,7 @@ h6, p, a {
 .app {
   min-height: 100vh;
   position: relative;
-  background: var(--text-50);
+  background: white;
   overflow-x: hidden;
   margin:0;
 }
@@ -141,7 +153,7 @@ h6, p, a {
   }
 }
 
-.rose-section {
+.grey-section {
   grid-column: 1;
   grid-row: 2;
   background: var(--bg-grey);
@@ -324,10 +336,8 @@ h6, p, a {
         color: var(--text-900);
         min-height: 48px;
         box-sizing: border-box;
-        field-sizing: content;
-        min-width: 300px;
-        width: 300px !important;
-        max-width: 500px;
+        font-size: var(--text-size-small);
+        width: fit-content;
 
         ::placeholder {
           color: var(--text-500);
@@ -450,10 +460,10 @@ h6, p, a {
       font-size: 14px;
       font-weight: 600;
       cursor: pointer;
-      transition: background-color 0.3s ease;
+      transition: opacity 0.3s ease;
 
       &:hover {
-        background: var(--text-700);
+        opacity: 0.3;
       }
     }
   }
@@ -486,22 +496,11 @@ h6, p, a {
   gap: clamp(35px, 4vw, 50px);
   position: relative;
   min-height: auto;
-  
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100vw;
-    height: 100%;
-    background: white;
-    z-index: -1;
-  }
+  overflow-x: hidden;
 
   .current-weather {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: clamp(20px, 2.5vw, 30px);
     color: var(--text-900);
     width: 100%;
@@ -512,7 +511,7 @@ h6, p, a {
 
     .weather-temp {
       display: flex;
-      align-items: flex-start;
+      align-items: center;
       flex-shrink: 0;
       margin-right: clamp(15px, 2vw, 25px);
 
@@ -526,7 +525,6 @@ h6, p, a {
 
     .weather-info {
       flex: 1;
-      padding-top: clamp(10px, 1.5vw, 15px);
 
       h3.weather-title {
         font-size: clamp(18px, 1.8vw, 24px);
@@ -567,19 +565,23 @@ h6, p, a {
 
     .see-more-btn {
       background: transparent;
-      border: 1px solid var(--text-300);
+      border: none;
       color: var(--text-600);
-      padding: clamp(8px, 0.8vw, 12px) clamp(16px, 1.6vw, 24px);
-      border-radius: 50px;
-      font-size: clamp(12px, 1.1vw, 14px);
-      font-weight: 400;
+      padding: 0;
+      margin: 0;
+      font-size: var(--text-size-h6);
+      line-height: var(--text-lh-h6);
+      font-weight: 300;
       cursor: pointer;
       transition: all 0.3s ease;
       align-self: flex-start;
-      text-transform: lowercase;
+      border-radius: 4px;
 
       &:hover {
-        border-color: var(--text-600);
+        color: var(--text-900);
+      }
+
+      &:focus {
         color: var(--text-900);
       }
     }
@@ -601,6 +603,10 @@ h6, p, a {
         max-height: 130px;
 
         :hover {
+          opacity: 0.8;
+        }
+
+        &:focus {
           opacity: 0.8;
         }
 
@@ -750,6 +756,7 @@ h6, p, a {
       align-items: center;
       justify-content: center;
       transition: all 0.3s ease;
+      border-radius: 4px;
 
       :hover {
         opacity: .2;
@@ -794,7 +801,7 @@ h6, p, a {
         font-weight: 500;
         line-height: 16px;
         cursor: pointer;
-        transition: background-color 0.3s ease;
+        transition: all 0.3s ease;
         margin-top: 20px;
 
         :hover {
@@ -943,12 +950,12 @@ h6, p, a {
     .first-paragraph, .second-paragraph {
       font-size: 15px;
       line-height: 1.5;
-      width: 100%;
+      min-width: 70%;
       margin-bottom: 1rem;
     }
   }
 
-  .rose-section {
+  .grey-section {
     grid-column: 1;
     grid-row: 2;
     padding: 25px 18px;
@@ -1092,7 +1099,7 @@ h6, p, a {
 
         .see-more-btn {
           font-size: 13px;
-          padding: 7px 18px;
+          padding: 0;
         }
 
         .activities-grid {
@@ -1100,8 +1107,8 @@ h6, p, a {
 
           .activity-card {
             flex-direction: column;
-            min-height: auto;
-            max-height: 280px;
+            min-height: 250px;
+            max-height: 250px;
 
             .activity-image {
               width: 100%;
@@ -1118,7 +1125,10 @@ h6, p, a {
 
             .activity-content {
               padding: 0;
-              display: block;
+              display: flex;
+              flex-direction: column;
+              justify-content: space-between;
+              flex: 1;
 
               .activity-name {
                 font-size: 17px;
@@ -1131,7 +1141,7 @@ h6, p, a {
                 font-size: 15px;
                 line-height: 1.5;
                 color: var(--text-600);
-                margin-bottom: 20px;
+                margin-bottom: 0;
               }
             }
           }
@@ -1198,7 +1208,7 @@ h6, p, a {
     .first-paragraph, .second-paragraph {
       font-size: 16px;
       line-height: 1.5;
-      width: 100%;
+      min-width: 100%;
       margin-bottom: 1rem;
     }
 
@@ -1208,7 +1218,7 @@ h6, p, a {
     }
   }
   
-  .rose-section {
+  .grey-section {
     grid-column: 1;
     grid-row: 2;
     padding: 30px 20px;
@@ -1350,7 +1360,7 @@ h6, p, a {
 
       .see-more-btn {
         font-size: 12px;
-        padding: 8px 16px;
+        padding: 0;
       }
 
       .activities-grid {
@@ -1506,7 +1516,7 @@ h6, p, a {
     }
   }
 
-  .rose-section {
+  .grey-section {
     padding: 20px 16px;
 
     .forecast-section {
@@ -1626,7 +1636,7 @@ h6, p, a {
     }
   }
 
-  .rose-section {
+  .grey-section {
     padding: 16px 12px;
   }
 

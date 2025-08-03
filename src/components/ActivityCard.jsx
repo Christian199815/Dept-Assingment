@@ -1,8 +1,21 @@
-function ActivityCard({ activity, onClick }) {
+/**
+ * ActivityCard component - Clickable card displaying activity preview
+ * Supports keyboard navigation and focus management
+ */
+function ActivityCard({ activity, onClick, tabIndex = 100 }) {
   return (
     <div 
-      className="activity-card"
+      className="activity-card focus-outline"
       onClick={() => onClick(activity)}
+      tabIndex={tabIndex}
+      role="button"
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick(activity);
+        }
+      }}
+      aria-label={`View details for ${activity.title}`}
     >
       <div className="activity-image">
         <img 

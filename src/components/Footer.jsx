@@ -1,3 +1,7 @@
+/**
+ * Footer component - Bottom section displaying DEPT and HvA logos
+ * Shows collaboration between DEPT and Amsterdam University of Applied Sciences
+ */
 function Footer() {
   return (
     <div className="footer-section">

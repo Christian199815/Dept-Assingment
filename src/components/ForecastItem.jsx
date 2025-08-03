@@ -1,3 +1,7 @@
+/**
+ * ForecastItem component - Individual forecast day display
+ * Shows date, weather conditions, temperature range, precipitation, and wind direction
+ */
 function ForecastItem({ day, formatDate, convertTemp, getWeatherIcon, getWindRotation }) {
   return (
     <div className="forecast-item">
@@ -29,7 +33,7 @@ function ForecastItem({ day, formatDate, convertTemp, getWeatherIcon, getWindRot
          
         </p>
         <img className="forecast-wind-icon"
-            src="/direction-icon.svg" 
+            src="/wind-direction.svg" 
             alt="Wind direction" 
             width="16" 
             height="16"

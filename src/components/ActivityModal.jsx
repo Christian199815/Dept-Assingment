@@ -1,36 +1,93 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
+/**
+ * ActivityModal component - Modal displaying detailed activity information
+ * Features image carousel, focus trapping, and keyboard navigation
+ */
 function ActivityModal({ activity, onClose }) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  const modalRef = useRef(null)
+  const previouslyFocusedElement = useRef(null)
   
   // Ensure we have images array, fallback to single image or placeholder
   const images = activity.images || (activity.mainImage ? [activity.mainImage] : ['/placeholder-activity.jpg'])
 
+  /** Navigate to next image in carousel */
   const nextImage = () => {
     setCurrentImageIndex((prev) => (prev + 1) % images.length)
   }
 
+  /** Navigate to previous image in carousel */
   const prevImage = () => {
     setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length)
   }
 
-  // Handle escape key to close modal
+  /** Handle escape key and focus trapping for modal accessibility */
   useEffect(() => {
-    const handleEscape = (event) => {
+    const handleKeyDown = (event) => {
       if (event.key === 'Escape') {
         onClose()
+        return
+      }
+
+      // Focus trapping - keep tab navigation within modal
+      if (event.key === 'Tab') {
+        const modal = modalRef.current
+        if (!modal) return
+
+        const focusableElements = modal.querySelectorAll(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        )
+        const firstElement = focusableElements[0]
+        const lastElement = focusableElements[focusableElements.length - 1]
+
+        if (event.shiftKey) {
+          // Shift + Tab
+          if (document.activeElement === firstElement) {
+            event.preventDefault()
+            lastElement.focus()
+          }
+        } else {
+          // Tab
+          if (document.activeElement === lastElement) {
+            event.preventDefault()
+            firstElement.focus()
+          }
+        }
       }
     }
 
-    document.addEventListener('keydown', handleEscape)
+    // Store the previously focused element for restoration on close
+    previouslyFocusedElement.current = document.activeElement
+
+    document.addEventListener('keydown', handleKeyDown)
     document.body.style.overflow = 'hidden' // Prevent background scroll
 
+    // Focus the first focusable element when modal opens
+    setTimeout(() => {
+      const modal = modalRef.current
+      if (modal) {
+        const focusableElements = modal.querySelectorAll(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        )
+        if (focusableElements.length > 0) {
+          focusableElements[0].focus()
+        }
+      }
+    }, 100)
+
     return () => {
-      document.removeEventListener('keydown', handleEscape)
+      document.removeEventListener('keydown', handleKeyDown)
       document.body.style.overflow = 'unset'
+      
+      // Restore focus to the previously focused element
+      if (previouslyFocusedElement.current) {
+        previouslyFocusedElement.current.focus()
+      }
     }
   }, [onClose])
 
+  /** Close modal when clicking outside the modal content */
   const handleBackdropClick = (e) => {
     if (e.target === e.currentTarget) {
       onClose()
@@ -45,9 +102,9 @@ function ActivityModal({ activity, onClose }) {
       aria-modal="true"
       aria-labelledby="modal-title"
     >
-      <div className="modal-content">
+      <div className="modal-content" ref={modalRef}>
         <button 
-          className="modal-close" 
+          className="modal-close focus-outline" 
           onClick={onClose}
           aria-label="Close modal"
         >
@@ -68,7 +125,7 @@ function ActivityModal({ activity, onClose }) {
             {images.length > 1 && (
               <>
                 <button 
-                  className="carousel-btn carousel-prev" 
+                  className="carousel-btn carousel-prev focus-outline" 
                   onClick={prevImage}
                   aria-label="Previous image"
                 >
@@ -77,7 +134,7 @@ function ActivityModal({ activity, onClose }) {
                   </svg>
                 </button>
                 <button 
-                  className="carousel-btn carousel-next" 
+                  className="carousel-btn carousel-next focus-outline" 
                   onClick={nextImage}
                   aria-label="Next image"
                 >
@@ -116,7 +173,7 @@ function ActivityModal({ activity, onClose }) {
             <p>{activity.description}</p>
           </div>
 
-          <button className="view-event-btn">
+          <button className="view-event-btn focus-outline">
             View event
           </button>
         </div>

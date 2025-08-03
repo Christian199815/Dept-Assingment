@@ -1,6 +1,10 @@
 import ActivityCard from './ActivityCard'
 
-function ActivitiesList({ title, activities, onActivityClick }) {
+/**
+ * ActivitiesList component - Renders grid of activity cards with title
+ * Manages tab indexing for keyboard navigation
+ */
+function ActivitiesList({ title, activities, onActivityClick, startTabIndex = 100 }) {
   return (
     <div className="activities-list">
       <h5 className="activities-title">{title}</h5>
@@ -10,6 +14,7 @@ function ActivitiesList({ title, activities, onActivityClick }) {
             key={index}
             activity={activity}
             onClick={onActivityClick}
+            tabIndex={startTabIndex + index}
           />
         ))}
       </div>
